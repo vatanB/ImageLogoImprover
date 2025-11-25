@@ -88,9 +88,17 @@ def main():
                 # Determine Brand and Reference Asset
                 brand_key = label.lower()
                 
-                # The detector now has enhanced inference logic, so 'label' should be more accurate.
-                # We still check if we have the asset for the detected brand.
+                # If using SAM 3, it returns generic 'logo', try to infer brand from filename
+                if brand_key == 'logo' and USE_SAM3:
+                    filename_lower = filename.lower()
+                    for brand in BRAND_ASSETS.keys():
+                        if brand in filename_lower:
+                            brand_key = brand
+                            label = brand.upper()
+                            logger.info(f"    - Inferred brand '{brand}' from filename")
+                            break
                 
+                # Check if we have the asset for the detected brand
                 if brand_key not in BRAND_ASSETS:
                     logger.warning(f"    - Brand '{label}' detected but asset not found in BRAND_ASSETS. Skipping.")
                     continue
