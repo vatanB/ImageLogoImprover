@@ -60,20 +60,33 @@ def restore_logo(original_img_path: str, mask_path: str, reference_logo_path: st
         reference_logo = Image.open(reference_logo_path)
         logger.info(f"Reference logo size: {reference_logo.size}")
         
-        # STEP 3: Create prompt
-        prompt = f"""Enhance the clarity and sharpness of this {brand_name} logo to match the high-quality reference image. 
-Preserve the exact size and position. Only improve quality, do not change the logo design or size."""
+        # STEP 3: Create context-aware prompt
+        prompt = f"""Enhance ONLY the clarity and sharpness of the {brand_name} logo in this image.
+
+CRITICAL REQUIREMENTS:
+- Preserve the EXACT angle and perspective of the logo
+- Maintain the surface material and texture (plastic, metal, sticker, etc.)
+- Keep ALL existing lighting, shadows, reflections, and highlights
+- Do NOT replace or regenerate the logo - only sharpen and clarify what's already there
+- Keep the exact size, position, and 3D appearance
+- Match the logo design and colors to the reference image
+- Preserve any wear, scratches, or real-world imperfections in a natural way
+
+The reference image shows the correct {brand_name} logo design and brand colors.
+The original cropped image shows the actual logo on the product - enhance its clarity while keeping its real-world appearance intact.
+Output should be the same size as the input cropped logo."""
         
         logger.info(f"PROMPT: {prompt}")
         
-        # STEP 4: Call Gemini API
+        # STEP 4: Call Gemini API with improved config
         logger.info(f"Calling Gemini API...")
         response = client.models.generate_content(
             model=model_id,
             contents=[prompt, cropped_logo, reference_logo],
             config=types.GenerateContentConfig(
+                temperature=0.4,  # Lower temperature for more faithful reproduction
                 image_config=types.ImageConfig(
-                    aspect_ratio="1:1",
+                    aspect_ratio="free",  # Match input aspect ratio
                     image_size="2K"
                 )
             )
