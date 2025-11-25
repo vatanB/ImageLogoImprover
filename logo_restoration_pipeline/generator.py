@@ -60,33 +60,39 @@ def restore_logo(original_img_path: str, mask_path: str, reference_logo_path: st
         reference_logo = Image.open(reference_logo_path)
         logger.info(f"Reference logo size: {reference_logo.size}")
         
-        # STEP 3: Create context-aware prompt
-        prompt = f"""Enhance ONLY the clarity and sharpness of the {brand_name} logo in this image.
+        # STEP 3: Create context-aware prompt with strict shape preservation
+        prompt = f"""CRITICAL: Enhance ONLY the clarity and sharpness of the {brand_name} logo. Output must EXACTLY match the input image dimensions and shape.
 
-CRITICAL REQUIREMENTS:
-- Preserve the EXACT angle and perspective of the logo
-- Maintain the surface material and texture (plastic, metal, sticker, etc.)
-- Keep ALL existing lighting, shadows, reflections, and highlights
-- Do NOT replace or regenerate the logo - only sharpen and clarify what's already there
-- Keep the exact size, position, and 3D appearance
-- Match the logo design and colors to the reference image
-- Preserve any wear, scratches, or real-world imperfections in a natural way
+ABSOLUTE REQUIREMENTS - DO NOT DEVIATE:
+- Output dimensions MUST be IDENTICAL to the input cropped image ({cropped_logo.size[0]}x{cropped_logo.size[1]} pixels)
+- Preserve the EXACT viewing angle and perspective distortion of the logo
+- Maintain the EXACT surface it's mounted on (plastic texture, curves, shadows from the surface)
+- Keep ALL existing lighting conditions, shadows, reflections, and highlights EXACTLY as they appear
+- The logo is embedded IN the surface - preserve this 3D relationship perfectly
+- Do NOT create a flat logo on a white/solid background
+- Do NOT straighten or correct the perspective - keep it tilted/angled as shown
+- Do NOT add padding, borders, or background - match the input frame exactly
+- Match the logo design and colors to the reference, but preserve ALL real-world distortions
 
-The reference image shows the correct {brand_name} logo design and brand colors.
-The original cropped image shows the actual logo on the product - enhance its clarity while keeping its real-world appearance intact.
-Output should be the same size as the input cropped logo."""
+CONTEXT:
+- Reference image: Shows the ideal {brand_name} logo design and brand colors
+- Input cropped image: Shows the ACTUAL logo on the product with its real perspective, material, and lighting
+- Your task: Sharpen the input logo while keeping its exact context and dimensions
+
+OUTPUT: Must be identical size and shape to input, with enhanced logo clarity only."""
         
         logger.info(f"PROMPT: {prompt}")
+        logger.info(f"Input cropped logo size: {cropped_logo.size}")
         
-        # STEP 4: Call Gemini API with improved config
+        # STEP 4: Call Gemini API without aspect_ratio constraint
         logger.info(f"Calling Gemini API...")
         response = client.models.generate_content(
             model=model_id,
             contents=[prompt, cropped_logo, reference_logo],
             config=types.GenerateContentConfig(
-                temperature=0.4,  # Lower temperature for more faithful reproduction
+                temperature=0.3,  # Even lower for more faithful reproduction
                 image_config=types.ImageConfig(
-                    aspect_ratio="1:1",  # Use 1:1 for logos (they're typically square-ish)
+                    # Don't specify aspect_ratio - let it match input
                     image_size="2K"
                 )
             )
