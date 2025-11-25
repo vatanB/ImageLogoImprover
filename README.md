@@ -13,78 +13,70 @@ Automated logo detection and enhancement system using SAM 3 (text prompting) and
 
 ## Quick Start (Windows + NVIDIA)
 
-### 1. Install Prerequisites
+### Automated Setup (Recommended)
 
 ```powershell
-# Install Python 3.12
-# Download from: https://www.python.org/downloads/
-
-# Verify installation
-python --version  # Should show 3.12.x
-
-# Install CUDA 12.6
-# Download from: https://developer.nvidia.com/cuda-downloads
-```
-
-### 2. Clone Repository
-
-```powershell
-git clone https://github.com/YOUR_USERNAME/ImageLogoImprover.git
+# 1. Clone repository
+git clone https://github.com/vatanB/ImageLogoImprover.git
 cd ImageLogoImprover
+
+# 2. Run automated setup
+.\setup_windows.bat
+
+# This will:
+# - Install PyTorch with CUDA 12.6
+# - Install all dependencies
+# - Install SAM 3
+# - Create .env file
 ```
 
-### 3. Create Virtual Environment
+### Manual Setup (If Needed)
+
+<details>
+<summary>Click to expand manual setup steps</summary>
+
+1. **Install Python 3.12**
+   - Download from: https://www.python.org/downloads/
+
+2. **Install CUDA 12.6**
+   - Download from: https://developer.nvidia.com/cuda-downloads
+
+3. **Install PyTorch with CUDA**
+   ```powershell
+   pip install torch==2.7.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+   ```
+
+4. **Install dependencies**
+   ```powershell
+   pip install -r requirements.txt
+   ```
+
+5. **Install SAM 3**
+   ```powershell
+   cd sam3
+   pip install -e .
+   cd ..
+   ```
+
+</details>
+
+### Final Steps (Required)
 
 ```powershell
-python -m venv venv
-.\venv\Scripts\activate
-```
+# 1. Add Gemini API key to .env file
+# Get key from: https://aistudio.google.com/apikey
+notepad .env
 
-### 4. Install PyTorch with CUDA
-
-```powershell
-pip install torch==2.7.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
-```
-
-### 5. Install SAM 3
-
-```powershell
-cd sam3
-pip install -e .
-cd ..
-```
-
-### 6. Install Other Dependencies
-
-```powershell
-pip install -r requirements.txt
-```
-
-### 7. Set Up API Keys
-
-Create a `.env` file:
-```env
-GOOGLE_GEMINI_API_KEY=your_gemini_api_key_here
-```
-
-Get Gemini API key: https://aistudio.google.com/apikey
-
-### 8. Authenticate with HuggingFace
-
-```powershell
-# Request access to SAM 3 checkpoint
+# 2. Request HuggingFace SAM 3 access
 # Visit: https://huggingface.co/facebook/sam3
-# Click "Request Access"
+# Click "Request Access" (usually instant approval)
 
-# Once approved, login:
+# 3. Login to HuggingFace
 huggingface-cli login
-# Paste your HF token from: https://huggingface.co/settings/tokens
-```
+# Paste token from: https://huggingface.co/settings/tokens
 
-### 9. Run Logo Detection
-
-```powershell
-python sam3_logo_detector.py
+# 4. Run logo detection!
+python sam3_official_detector.py
 ```
 
 ## Usage
