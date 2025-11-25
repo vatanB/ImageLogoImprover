@@ -77,7 +77,13 @@ def main():
             if not detections:
                 logger.info(f"No logos detected in {filename}. Skipping.")
                 continue
-                
+            
+            # Load original image once
+            import cv2
+            from PIL import Image as PILImage
+            full_image = PILImage.open(img_path)
+            
+            # Process each detected logo
             for i, detection in enumerate(detections):
                 label = detection['label']
                 box = detection['box']
@@ -108,11 +114,10 @@ def main():
                     logger.warning(f"    - Reference asset for '{brand_key}' not found at {reference_logo_path}. Skipping.")
                     continue
 
-                # B. Generate Clinical Mask (Now with Dilation)
+                # B. Generate Clinical Mask
                 mask_filename = f"mask_{filename}_{i}.png"
                 mask_path = os.path.join(OUTPUT_DIR, "masks", mask_filename)
                 
-                import cv2
                 temp_img = cv2.imread(img_path)
                 if temp_img is None:
                      logger.error(f"    - Failed to read image {img_path}. Skipping.")
@@ -121,17 +126,25 @@ def main():
                 create_clinical_mask(temp_img.shape, box, mask_path)
                 logger.info(f"    - Clinical Mask (dilated) generated at {mask_path}")
                 
+                # C. Restore Logo (enhance and paste into full_image)
+                # Save to temp location
+                temp_output = os.path.join(OUTPUT_DIR, f"temp_{i}_{filename}")
                 
-                # C. Restore Logo (Gemini 3.0 Pro with cropped region)
-                final_filename = f"restored_{filename}".replace(f"_{i}", "")  # One file per image
-                final_path = os.path.join(OUTPUT_DIR, final_filename)
+                # Save current full_image state
+                full_image.save(temp_output.replace('.jpg', '_input.jpg'))
                 
-                # Ensure directories exist
-                os.makedirs(OUTPUT_DIR, exist_ok=True)
+                # Enhance this logo
+                restore_logo(temp_output.replace('.jpg', '_input.jpg'), mask_path, reference_logo_path, brand_key, box, temp_output)
                 
-                # restore_logo now crops, enhances, and pastes back - returns full image
-                restore_logo(img_path, mask_path, reference_logo_path, brand_key, box, final_path)
-                logger.info(f"    - Logo enhanced and integrated at {final_path}")
+                # Load the enhanced result as the new full_image
+                full_image = PILImage.open(temp_output)
+                logger.info(f"    - Logo {i+1} enhanced and integrated")
+            
+            # D. Save final combined image with all enhanced logos
+            final_filename = f"restored_{filename}"
+            final_path = os.path.join(OUTPUT_DIR, final_filename)
+            full_image.save(final_path)
+            logger.info(f"✓ All logos enhanced and saved to {final_path}")
 
         except Exception as e:
             logger.error(f"Error processing {filename}: {e}")
