@@ -66,17 +66,23 @@ def detect_logos_sam3(image_path, text_prompt="logo", output_dir="output"):
         result_img = image_np.copy()
         
         for i, det in enumerate(detections):
-            mask = det['mask'].astype(bool)
-            box = det['box']
-            color = (0, 255, 0)  # Green
+            # Get mask and ensure it's the right shape
+            mask = det['mask']
+            if mask.ndim == 3:
+                mask = mask[0]  # Remove batch dimension if present
+            mask = mask.astype(bool)
             
-            # Overlay mask
-            result_img[mask] = (result_img[mask] * 0.6 + np.array(color) * 0.4).astype(np.uint8)
+            box = det['box']
+            color = (0, 255, 0)
+            
+            # Apply mask overlay
+            if mask.shape == result_img.shape[:2]:
+                result_img[mask] = (result_img[mask] * 0.6 + np.array(color) * 0.4).astype(np.uint8)
             
             # Draw box
             cv2.rectangle(result_img, (box[0], box[1]), (box[2], box[3]), color, 3)
-            cv2.putText(result_img, f"Logo {i+1}: {det['score']:.2f}",
-                       (box[0], box[1]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+            cv2.putText(result_img, f"Logo {i+1}: {det['score']:.2f}", (box[0], box[1]-10),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
         
         output_path = os.path.join(output_dir, "sam3_official_detection.jpg")
         cv2.imwrite(output_path, cv2.cvtColor(result_img, cv2.COLOR_RGB2BGR))
