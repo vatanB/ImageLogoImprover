@@ -1,0 +1,18 @@
+# Core dependencies
+google-genai>=1.0.0
+python-dotenv>=1.0.0
+pillow>=10.0.0
+opencv-python>=4.8.0
+numpy>=1.26.0
+
+# SAM 3 dependencies (installed separately via sam3 setup.py)
+# torch>=2.7.0  # Install with CUDA: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+# einops>=0.8.0  # Installed with SAM 3
+# timm>=1.0.17  # Installed with SAM 3
+# ftfy==6.1.1  # Installed with SAM 3
+
+# HuggingFace
+huggingface-hub>=0.20.0
+
+# Optional: for visualization
+matplotlib>=3.8.0

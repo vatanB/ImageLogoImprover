@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+.env
+*.log
+
+# Model checkpoints (large files)
+checkpoints/*.pt
+!checkpoints/.gitkeep
+runs/
+weights/
+
+# Datasets (too large for git)
+LogoDet-3K/
+LogoDet-3K-small/
+car_logos/train/
+car_logos/validation/
+
+# Output files
+output/*.jpg
+output/*.png
+output/masks/
+output/debug/
+!output/.gitkeep
+
+# Temporary files
+*.tmp
+*.cache
+.ipynb_checkpoints/
