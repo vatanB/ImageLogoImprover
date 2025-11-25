@@ -128,10 +128,36 @@ OUTPUT: Must be identical size and shape to input, with enhanced logo clarity on
             logger.info(f"Resizing enhanced logo from {enhanced_logo.size} to ({w}, {h})")
             enhanced_logo = enhanced_logo.resize((w, h), Image.Resampling.LANCZOS)
             
-            # STEP 7: Paste back into full image
-            logger.info(f"Pasting enhanced logo back at position ({x}, {y})")
-            result_image = full_image.copy()
-            result_image.paste(enhanced_logo, (x, y))
+            # STEP 7: Seamless Blending (Post-processing)
+            logger.info(f"Blending enhanced logo at position ({x}, {y})")
+            
+            import cv2
+            import numpy as np
+            
+            # Convert PIL images to OpenCV format (RGB -> BGR)
+            src_img = cv2.cvtColor(np.array(enhanced_logo), cv2.COLOR_RGB2BGR)
+            dst_img = cv2.cvtColor(np.array(full_image), cv2.COLOR_RGB2BGR)
+            
+            # Create a mask for the patch (all white)
+            # This tells seamlessClone to blend the entire patch
+            mask = 255 * np.ones(src_img.shape, src_img.dtype)
+            
+            # Calculate center for seamlessClone
+            # center is (x + w//2, y + h//2)
+            center = (x + w // 2, y + h // 2)
+            
+            # Perform seamless cloning
+            # NORMAL_CLONE preserves the patch colors but blends the edges
+            try:
+                blended = cv2.seamlessClone(src_img, dst_img, mask, center, cv2.NORMAL_CLONE)
+                
+                # Convert back to PIL
+                result_image = Image.fromarray(cv2.cvtColor(blended, cv2.COLOR_BGR2RGB))
+                logger.info("Seamless blending applied successfully")
+            except Exception as e:
+                logger.error(f"Blending failed: {e}. Falling back to simple paste.")
+                result_image = full_image.copy()
+                result_image.paste(enhanced_logo, (x, y))
             
             # SAVE final result
             if output_path:
