@@ -4,7 +4,13 @@ import logging
 from dotenv import load_dotenv
 
 # Import modules
-from detector import LogoDetector
+try:
+    from sam3_detector import SAM3LogoDetector
+    USE_SAM3 = True
+except ImportError:
+    from detector import LogoDetector
+    USE_SAM3 = False
+    
 from masker import create_clinical_mask
 from generator import restore_logo
 from blender import seamless_merge
@@ -38,8 +44,12 @@ def main():
     
     # 1. Initialize Detector
     try:
-        detector = LogoDetector() # Defaults to yolo11n.pt
-        logger.info("LogoDetector initialized.")
+        if USE_SAM3:
+            detector = SAM3LogoDetector()
+            logger.info("SAM 3 LogoDetector initialized.")
+        else:
+            detector = LogoDetector()
+            logger.info("YOLO LogoDetector initialized.")
     except Exception as e:
         logger.error(f"Failed to initialize detector: {e}")
         return
