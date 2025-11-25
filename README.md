@@ -26,7 +26,7 @@ cd ImageLogoImprover
 # This will:
 # - Install PyTorch with CUDA 12.6
 # - Install all dependencies
-# - Install SAM 3
+# - Clone and install SAM 3 from GitHub
 # - Create .env file
 ```
 
