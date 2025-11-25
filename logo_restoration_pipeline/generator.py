@@ -86,7 +86,7 @@ Output should be the same size as the input cropped logo."""
             config=types.GenerateContentConfig(
                 temperature=0.4,  # Lower temperature for more faithful reproduction
                 image_config=types.ImageConfig(
-                    aspect_ratio="free",  # Match input aspect ratio
+                    aspect_ratio="1:1",  # Use 1:1 for logos (they're typically square-ish)
                     image_size="2K"
                 )
             )
